@@ -1,0 +1,84 @@
+<?php
+session_start();
+include 'dbconn.php';
+
+$uname = $_POST['uname'];
+        $passold = $_POST['passold'];
+        $passnew = $_POST['passnew'];
+        $passconfi= $_POST['passconfi'];
+        $result = mysql_query("SELECT user_password FROM user_account WHERE user_id='$uname'");
+        if(!$result)
+        {
+        echo "The username you entered does not exist";
+        }
+        else if($passold!= mysql_result($result, 0))
+        {
+        echo "You entered an incorrect password";
+        }
+        if($passnew == $passconfi)
+        $sql=mysql_query("UPDATE user_password SET user_password='$passnew' where user_id='$uname'");
+        if($sql)
+        {
+        echo "Congratulations You have successfully changed your password";
+        }
+       else
+        {
+       echo "Passwords do not match";
+       }
+      ?>
+
+
+
+
+
+
+      <?php
+session_start();
+include 'dbconn.php';
+
+// Ensure dbconn.php contains the correct connection code with $conn variable
+// e.g. $conn = new mysqli($servername, $username, $password, $dbname);
+
+$uname = $_POST['uname'];
+$passold = $_POST['passold'];
+$passnew = $_POST['passnew'];
+$passconfi = $_POST['passconfi'];
+
+// Check if the username exists
+$stmt = $conn->prepare("SELECT user_password FROM user_account WHERE username = ?");
+$stmt->bind_param("s", $uname);
+$stmt->execute();
+$stmt->store_result();
+
+if ($stmt->num_rows == 0) {
+    echo "The username you entered does not exist";
+} else {
+    $stmt->bind_result($hashed_password);
+    $stmt->fetch();
+
+    // Verify the old password
+    if (!password_verify($passold, $hashed_password)) {
+        echo "You entered an incorrect password";
+    } else {
+        // Check if the new passwords match
+        if ($passnew === $passconfi) {
+            // Hash the new password
+            $new_hashed_password = password_hash($passnew, PASSWORD_BCRYPT);
+
+            // Update the password in the database
+            $update_stmt = $conn->prepare("UPDATE user_account SET user_password = ? WHERE user_id = ?");
+            $update_stmt->bind_param("ss", $new_hashed_password, $uname);
+            if ($update_stmt->execute()) {
+                echo "Congratulations! You have successfully changed your password.";
+            } else {
+                echo "There was an error updating the password. Please try again.";
+            }
+            $update_stmt->close();
+        } else {
+            echo "Passwords do not match";
+        }
+    }
+}
+$stmt->close();
+$conn->close();
+?>

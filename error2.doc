@@ -1,0 +1,36 @@
+&& isset($_GET['token'])
+
+/////////
+<?php
+    require_once('dbconn.php');
+  
+    if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on'){
+      $url = "https://";
+    }else{
+      $url = "http://";   
+      
+      // Append the host(domain name, ip) to the URL.   
+      $url.= $_SERVER['HTTP_HOST'];
+      
+      // Append the requested resource location to the URL   
+      $url.= $_SERVER['REQUEST_URI'];    
+    
+    
+    } 
+    $url = explode("=",  $url);   
+    $userName = $url[count($url) - 1];	
+    
+    require_once('dbconn.php');
+    $sql = "SELECT * FROM signup WHERE username ='$userName'";
+    $result     = mysqli_query($conn,$sql);
+    if($result){
+        $numRow     = mysqli_num_rows($result);
+        if(mysqli_num_rows($result)){
+
+        }else{
+            header("location:profilepage.php");
+        }
+    }else{
+        header("location:profilepage.php");
+    }
+?>
